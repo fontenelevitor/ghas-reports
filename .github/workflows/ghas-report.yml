@@ -47,17 +47,21 @@ jobs:
           echo "Repositorio,Criticas,Altas,TotalVulnerabilidades,StatusGHAS" > code_scanning.csv
 
           jq -r '.[].name' repos.json | while read repo; do
-            alerts=$(gh api repos/fontenelevitor/$repo/code-scanning/alerts --paginate 2>/dev/null || true)
+            response=$(gh api repos/fontenelevitor/$repo/code-scanning/alerts --paginate 2>/dev/null || true)
 
-            if [ -z "$alerts" ]; then
+            # Verifica se a resposta é um array
+            is_array=$(echo "$response" | jq 'type == "array"' 2>/dev/null || echo "false")
+
+            if [ "$is_array" != "true" ]; then
               echo "$repo,0,0,0,Nao configurado" >> code_scanning.csv
             else
-              crit=$(echo "$alerts" | jq '[.[] | select(.rule.severity=="critical")] | length')
-              high=$(echo "$alerts" | jq '[.[] | select(.rule.severity=="high")] | length')
+              crit=$(echo "$response" | jq '[.[] | select(.rule.severity=="critical")] | length')
+              high=$(echo "$response" | jq '[.[] | select(.rule.severity=="high")] | length')
               total=$((crit + high))
               echo "$repo,$crit,$high,$total,OK" >> code_scanning.csv
             fi
           done
+
           
           
       - name: Upload GHAS reports
