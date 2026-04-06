@@ -3,7 +3,7 @@ name: GHAS Daily Report
 
 on:
   schedule:
-    - cron: "0 11 * * *"  # 08:00 horário de Brasília
+    - cron: "0 11 * * *"
   workflow_dispatch:
 
 permissions:
@@ -17,3 +17,8 @@ jobs:
     steps:
       - name: Checkout repo
         uses: actions/checkout@v4
+
+      - name: List repositories
+        run: |
+          gh repo list fontenelevitor --json name --limit 1000 > repos.json
+
