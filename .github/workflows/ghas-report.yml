@@ -31,7 +31,7 @@ jobs:
           echo "Repositorio,TotalVulnerabilidades,StatusGHAS" > secret_scanning.csv
 
           jq -r '.[].name' repos.json | while read repo; do
-            alerts=$(gh api repos/fontenelevitor/$repo/secret-scanning/alerts --paginate 2>/dev/null)
+            alerts=$(gh api repos/fontenelevitor/$repo/secret-scanning/alerts --paginate 2>/dev/null || true)
 
             if [ "$alerts" = "" ]; then
               echo "$repo,0,Nao configurado" >> secret_scanning.csv
