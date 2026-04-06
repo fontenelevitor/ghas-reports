@@ -1,0 +1,19 @@
+
+name: GHAS Daily Report
+
+on:
+  schedule:
+    - cron: "0 11 * * *"  # 08:00 horário de Brasília
+  workflow_dispatch:
+
+permissions:
+  security-events: read
+  contents: read
+
+jobs:
+  ghas-report:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
