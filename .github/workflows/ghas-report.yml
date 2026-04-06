@@ -22,3 +22,17 @@ jobs:
         run: |
           gh repo list fontenelevitor --json name --limit 1000 > repos.json
 
+      - name: Secret Scanning report
+        run: |
+          echo "Repositorio,TotalVulnerabilidades,StatusGHAS" > secret_scanning.csv
+
+          jq -r '.[].name' repos.json | while read repo; do
+            alerts=$(gh api repos/fontenelevitor/$repo/secret-scanning/alerts --paginate 2>/dev/null)
+
+            if [ "$alerts" = "" ]; then
+              echo "$repo,0,Nao configurado" >> secret_scanning.csv
+            else
+              total=$(echo "$alerts" | jq 'length')
+              echo "$repo,$total,OK" >> secret_scanning.csv
+            fi
+          done
