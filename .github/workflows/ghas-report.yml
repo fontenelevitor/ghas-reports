@@ -40,6 +40,25 @@ jobs:
               echo "$repo,$total,OK" >> secret_scanning.csv
             fi
           done
+
+
+      - name: Code Scanning report
+        run: |
+          echo "Repositorio,Criticas,Altas,TotalVulnerabilidades,StatusGHAS" > code_scanning.csv
+
+          jq -r '.[].name' repos.json | while read repo; do
+            alerts=$(gh api repos/fontenelevitor/$repo/code-scanning/alerts --paginate 2>/dev/null || true)
+
+            if [ -z "$alerts" ]; then
+              echo "$repo,0,0,0,Nao configurado" >> code_scanning.csv
+            else
+              crit=$(echo "$alerts" | jq '[.[] | select(.rule.severity=="critical")] | length')
+              high=$(echo "$alerts" | jq '[.[] | select(.rule.severity=="high")] | length')
+              total=$((crit + high))
+              echo "$repo,$crit,$high,$total,OK" >> code_scanning.csv
+            fi
+          done
+          
           
       - name: Upload GHAS reports
         uses: actions/upload-artifact@v4
