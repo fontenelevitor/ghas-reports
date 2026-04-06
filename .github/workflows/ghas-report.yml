@@ -40,3 +40,9 @@ jobs:
               echo "$repo,$total,OK" >> secret_scanning.csv
             fi
           done
+
+      - name: Upload GHAS reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: ghas-reports
+          path: "*.csv
