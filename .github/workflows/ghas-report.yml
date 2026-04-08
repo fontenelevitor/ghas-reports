@@ -62,6 +62,25 @@ jobs:
             fi
           done
 
+      - name: Dependabot report
+        run: |
+          echo "Repositorio,Criticas,Altas,TotalVulnerabilidades,StatusGHAS" > dependabot.csv
+
+          jq -r '.[].name' repos.json | while read repo; do
+            response=$(gh api repos/fontenelevitor/$repo/dependabot/alerts --paginate 2>/dev/null || true)
+
+            is_array=$(echo "$response" | jq 'type == "array"' 2>/dev/null || echo "false")
+
+            if [ "$is_array" != "true" ]; then
+              echo "$repo,0,0,0,Nao configurado" >> dependabot.csv
+            else
+              crit=$(echo "$response" | jq '[.[] | select(.severity=="critical")] | length')
+              high=$(echo "$response" | jq '[.[] | select(.severity=="high")] | length')
+              total=$((crit + high))
+              echo "$repo,$crit,$high,$total,OK" >> dependabot.csv
+            fi
+          done
+
           
           
       - name: Upload GHAS reports
